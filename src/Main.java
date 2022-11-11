@@ -18,12 +18,12 @@ public class Main {
 
     void test(){
         DoublyLinkedList list = new DoublyLinkedList();
+        //SinglyLinkedList list = new SinglyLinkedList();
 
         list.prepend("Frodo").prepend("Sam").prepend("Merry").prepend("Pippin");
 
         // expected: Pippin, Merry, Sam, Frodo
         printList(list);
-
 
         list.append("Gandalf");
 

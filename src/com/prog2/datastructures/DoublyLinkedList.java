@@ -28,7 +28,7 @@ public class DoublyLinkedList<T> implements List<T> {
 
     @Override
     public boolean isEmpty() {
-        return count == 0;
+        return count ==0;
     }
 
     @Override
@@ -38,11 +38,21 @@ public class DoublyLinkedList<T> implements List<T> {
 
     @Override
     public T get(int index) {
-        Node temp = head;
-        for (int i = 0; i < index-1; i++) {
-            temp = temp.next;
+
+        // is the index valid?
+        if (index < 0 || index >= count){
+            throw new IndexOutOfBoundsException();
         }
-        return temp.data;
+
+        int i = 0;
+        Node ptr = head;
+
+        while(i < index && ptr.next != null){
+            ptr = ptr.next;
+            i++;
+        }
+
+        return ptr.data;
     }
 
     @Override
@@ -60,7 +70,6 @@ public class DoublyLinkedList<T> implements List<T> {
             oldhead.prev = head;
         }
 
-
         count++;
 
         return this;
@@ -68,6 +77,7 @@ public class DoublyLinkedList<T> implements List<T> {
 
     @Override
     public List append(T element) {
+
         // make the new node
         Node n = new Node(element);
 
@@ -88,6 +98,7 @@ public class DoublyLinkedList<T> implements List<T> {
 
     @Override
     public List insert(int index, T element) {
+
         if(index < 0 || index >= count){
             throw new IndexOutOfBoundsException();
         }
@@ -104,12 +115,12 @@ public class DoublyLinkedList<T> implements List<T> {
         ptr.next = newNode;
 
         count++;
-
         return this;
     }
 
     @Override
     public List remove(int index) {
+
         if(index < 0 || index >= count){
             throw new IndexOutOfBoundsException();
         }
@@ -149,7 +160,7 @@ public class DoublyLinkedList<T> implements List<T> {
     }
 
     @Override
-    public int indexOf(Object element) {
+    public int indexOf(T element) {
         for (int i = 0; i < getLength(); i++) {
             if(get(i) == element){
                 return i;
@@ -157,7 +168,6 @@ public class DoublyLinkedList<T> implements List<T> {
         }
         return -1;
     }
-
     private class Node{
 
         private T data;

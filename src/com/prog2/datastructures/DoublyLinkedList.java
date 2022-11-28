@@ -54,8 +54,10 @@ public class DoublyLinkedList<T> implements List<T> {
             head = n;
             tail = n;
         } else {
+            Node oldhead = head;
             n.next = head;
             head = n;
+            oldhead.prev = head;
         }
 
 

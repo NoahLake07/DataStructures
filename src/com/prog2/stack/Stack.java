@@ -63,5 +63,18 @@ public class Stack<T> {
 
     }
 
+    public void printStack(){
+        System.out.println();
+        System.out.println("=====STACK PRINT=====");
+        for (int i = 0; i < arr.length-1; i++) {
+
+            if(arr[i] != null) {
+                System.out.println(arr[i]);
+            }
+        }
+        System.out.println("=====================");
+        System.out.println();
+    }
+
 
 }

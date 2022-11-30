@@ -8,17 +8,14 @@ import java.awt.event.ActionEvent;
 public class Calculator extends GraphicsProgram {
 
     private GLabel display = new GLabel("");
+    // number stack: the operands of your math
+    Stack<Integer> ns = new Stack<>();
+
+    // operator stack: the operators of your math
+    Stack<Character> op = new Stack<>();
 
     @Override
     public void init(){
-
-
-        // 1 2 3 +
-        // 4 5 6 -
-        // 7 8 9 *
-        // ( 0 ) /
-        // C < = .
-
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new acm.gui.TableLayout(5, 4));
@@ -58,11 +55,13 @@ public class Calculator extends GraphicsProgram {
 
                 String output = ops.toString();
                 display.setLabel(output);
+                System.out.println(">>>>OUTPUT:: " + output);
 
                 break;
 
             case "C": // clear the display
                 display.setLabel("");
+
                 break;
 
             case "<": // delete a single character from the display IF a character exists to be deleted
@@ -91,8 +90,6 @@ public class Calculator extends GraphicsProgram {
         }
 
         return false;
-
-
     }
 
     private int calculate(char op, int a, int b){
@@ -120,13 +117,6 @@ public class Calculator extends GraphicsProgram {
         // I don't want to say input.length() all the time
         int strlen = input.length();
 
-        // number stack: the operands of your math
-        Stack<Integer> ns = new Stack<>();
-
-        // operator stack: the operators of your math
-        Stack<Character> op = new Stack<>();
-
-
         int i = 0; // an iteration marker for the first while loop
         char ch;
 
@@ -149,9 +139,9 @@ public class Calculator extends GraphicsProgram {
 
                 postMessage("Searching for symbols...");
 
-                if(ch <= '9' || ch >= '0'){
+                if(ch <= '9' && ch >= '0'){
                     // number digit found
-                    System.out.print("Found number: " + ch);
+                    postMessage("Found Number: " + ch);
                     s = new StringBuffer();
                     s.append(ch);
                     i++;
@@ -159,61 +149,54 @@ public class Calculator extends GraphicsProgram {
                     // loop through the rest of the number (if it is multi-digit)
                     while(i < strlen && input.charAt(i) <= '9' && input.charAt(i) >= '0'){
                         s.append(input.charAt(i));
-                        System.out.print(input.charAt(i));
                         i++;
                     }
 
-                    ns.push(Integer.parseInt(new String(s)));
+                    int foundInt = Integer.parseInt(String.valueOf(s));
+                    ns.push(foundInt);
                     continue;
 
                 } else if (ch == '('){
                     // open parenthesis
                     postMessage("Found open parenthesis");
                     op.push(ch);
+                    i++;
 
                 } else if (ch == ')'){
                     // close parenthesis
                     postMessage("Found close parenthesis");
 
                     // calculate everything inside the parenthesis (PEMDAS)
-
-                    ns.push(calculate(op.pop(), ns.pop(), ns.pop()));
+                    while(!(op.peek() == '(')){
+                        ns.push(calculate(op.peek(), ns.pop(), ns.pop()));
+                    }
+                    op.pop();
+                    i++;
 
                 } else {
-                    postMessage("no");
+                    // found an operator
+                    postMessage("Symbol found.");
+                    if(op.isEmpty()){
+                        op.push(ch);
+                    } else if (precedence(op.peek(), ch)){
+                        ns.push(calculate(op.pop(), ns.pop(), ns.pop()));
+                        op.push(ch);
+                    } else {
+                        op.push(ch);
+                        i++;
+                    }
                 }
-
-                /*
-                    Processing the input String should take the following steps:
-
-
-                    1) Check for numbers. Question to ask yourself: how do I handle multi-digit numbers?
-                       ch <= '9' && ch >= '0'
-                       i smell recursion
-
-                    2) Check for an opening parenthesis, which would indicate the start of a block
-                       that must be evaluated before all others.
-
-                    3) Check for a closing parenthesis, which indicates the end of a block that must
-                       be evaluated before all others
-
-                    4) Check for any non-paren operator, and determine if it has a higher precedence
-                       that the operator that is currently on top of the op stack. When we find an op
-                       that has precedence ( '*' or '/' vs '+' or '-'), we should calculate the result
-                       of the current operator immediately, and push the result onto the number stack.
-
-                    5) As the primary loop reaches the end of an iteration, don't forget to increment.
-
-                 */
-
-
 
             } // end of outer loop and primary evaluation
 
-            // it is possible that the op stack/number stack will still have contents.
-            // these must be evaluated until the stacks are empty.
-
-            // basically, if there are still operators on the op stack, keep calculating.
+            while(!op.isEmpty()){
+                ns.push(calculate(op.pop(), ns.pop(), ns.pop()));
+                ns.printStack();
+                op.printStack();
+            }
+            postMessage("CALCULATED!");
+            ns.printStack();
+            op.printStack();
 
             // return whatever is left on the number stack.
             return ns.pop();
@@ -221,7 +204,6 @@ public class Calculator extends GraphicsProgram {
         } else {
             return 0;
         }
-
 
     }
 

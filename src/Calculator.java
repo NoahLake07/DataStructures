@@ -47,8 +47,8 @@ public class Calculator extends GraphicsProgram {
     public void actionPerformed(ActionEvent ae) {
         switch (ae.getActionCommand()){
 
-            case "=": //evaluates
-                System.out.flush();  //clears console
+            case "=" -> {
+                System.out.flush();
 
                 int response = evaluate(display.getLabel());
 
@@ -57,21 +57,21 @@ public class Calculator extends GraphicsProgram {
 
                 String output = ops.toString();
                 display.setLabel(output);
-                break;
+            }
 
-            case "C":
+            case "C" -> {
                 display.setLabel("");
-                break;
+            }
 
-            case "<":
-                if (display.getLabel().length() >0) {
+            case "<" -> {
+                if (display.getLabel().length() > 0) {
                     StringBuilder sb = new StringBuilder(display.getLabel());
-                    sb = sb.deleteCharAt(display.getLabel().length()-1);
+                    sb = sb.deleteCharAt(display.getLabel().length() - 1);
                     display.setLabel(sb.toString());
                 }
+            }
 
-            default:
-                display.setLabel(display.getLabel() + ae.getActionCommand());
+            default->{display.setLabel(display.getLabel() + ae.getActionCommand());}
         }
     }
 

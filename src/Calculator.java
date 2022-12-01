@@ -1,52 +1,54 @@
-import acm.graphics.GLabel;
 import acm.program.GraphicsProgram;
-import com.prog2.stack.Stack;
-import javax.swing.JPanel;
-import javax.swing.JButton;
+import acm.graphics.*;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
+import com.prog2.stack.Stack;
 
 public class Calculator extends GraphicsProgram {
 
     private GLabel display = new GLabel("");
-    // number stack: the operands of your math
-    Stack<Integer> ns = new Stack<>();
-
-    // operator stack: the operators of your math
-    Stack<Character> op = new Stack<>();
 
     @Override
-    public void init(){
+    public void init() {
+        this.getMenuBar().setVisible(false);
+        this.setBackground(new Color(225, 225, 225));
+        this.setSize(300,300);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new acm.gui.TableLayout(5, 4));
+        GRect calculateBox = new GRect(getWidth(), 50);
+        calculateBox.setFilled(true);
+        calculateBox.setFillColor(new Color(225, 148, 69));
+        calculateBox.setColor(calculateBox.getFillColor());
 
         String[] labels = { "1", "2", "3", "+",
                 "4", "5", "6", "-",
                 "7", "8", "9", "*",
                 "(", "0", ")", "/",
-                "C", "<", "=", "." };
+                "C", "<", "=", "."};
 
         for (int i = 0; i < 20; i++) {
             JButton button = new JButton(labels[i]);
             buttonPanel.add(button);
         }
 
-        add(buttonPanel, CENTER);
+        add(buttonPanel, 60,100);
+        add(calculateBox,0,0);
 
         addActionListeners();
 
         display.setFont("Times-bold-24");
-        add(display, 0, 18);
+        add(display, 18, 36);
     }
 
     @Override
-    public void actionPerformed(ActionEvent ae){
-
+    public void actionPerformed(ActionEvent ae) {
         switch (ae.getActionCommand()){
 
-            case "=": // cause an evaluation
-
-                System.out.flush(); // clear the console
+            case "=": //evaluates
+                System.out.flush();  //clears console
 
                 int response = evaluate(display.getLabel());
 
@@ -55,37 +57,31 @@ public class Calculator extends GraphicsProgram {
 
                 String output = ops.toString();
                 display.setLabel(output);
-                System.out.println(">>>>OUTPUT:: " + output);
-
                 break;
 
-            case "C": // clear the display
+            case "C":
                 display.setLabel("");
-
                 break;
 
-            case "<": // delete a single character from the display IF a character exists to be deleted
-
-                if(display.getLabel().length()>0){
+            case "<":
+                if (display.getLabel().length() >0) {
                     StringBuilder sb = new StringBuilder(display.getLabel());
                     sb = sb.deleteCharAt(display.getLabel().length()-1);
                     display.setLabel(sb.toString());
                 }
-
-                break;
 
             default:
                 display.setLabel(display.getLabel() + ae.getActionCommand());
         }
     }
 
+
     private boolean precedence(char peek, char ch){
-        if((peek == '*' || peek == '/') && (ch == '+' || ch == '-')){
+        if ((peek == '*' || peek == '/') && (ch == '+' || ch == '-')){
             return true;
         }
 
-        // forces left to right operation
-        if(peek != ch && peek != '('){
+        if (peek != ch && peek != '('){
             return true;
         }
 
@@ -93,129 +89,103 @@ public class Calculator extends GraphicsProgram {
     }
 
     private int calculate(char op, int a, int b){
-        if(op == '*'){
-            return a*b;
+        switch (op) {
+            case '*' -> {
+                return a * b;
+            }
+            case '/' -> {
+                return a / b;
+            }
+            case '+' -> {
+                return a + b;
+            }
+            case '-' -> {
+                return a - b;
+            }
+            default -> {
+                postMessage("Operator Error");
+                return 0;
+            }
         }
-
-        if(op == '/'){
-            return a/b;
-        }
-
-        if(op == '+'){
-            return a+b;
-        }
-
-        if(op == '-'){
-            return a-b;
-        }
-
-        return 0;
     }
 
     private int evaluate(String input){
-
-        // I don't want to say input.length() all the time
         int strlen = input.length();
 
-        int i = 0; // an iteration marker for the first while loop
+        // make the stacks
+        Stack<Integer> ns = new Stack<>();
+        Stack<Character> op = new Stack<>();
+
+        int i = 0;
         char ch;
 
-        StringBuffer s;
+        // populating the stacks
+        StringBuffer sb = new StringBuffer();
+        for (int j = 0; j < input.length(); j++) {
+            sb.append(input.charAt(j));
+        }
 
-        if(!input.isEmpty()){ // ensure there is actually some input to process
+        // evaluation of stacks
+        if (!input.isEmpty()){
+            // loop across the given string
+            while (i < strlen){
+                ch = input.charAt(i++);
 
-            postMessage("Beginning evaluation...", 100);
-
-            // loop across the input String
-            while(i < strlen) {
-                // store the character found at a given point (i)
-                ch = input.charAt(i);
-
-                // skip over blank spaces (this shouldn't happen)
-                if(ch == ' '){
+                if (ch == ' '){
                     i++;
                     continue;
                 }
 
-                postMessage("Searching for symbols...");
-
-                if(ch <= '9' && ch >= '0'){
-                    // number digit found
-                    postMessage("Found Number: " + ch);
-                    s = new StringBuffer();
+                if (ch <= '9' && ch >= '0'){
+                    // found a valid number
+                    StringBuffer s = new StringBuffer();
                     s.append(ch);
-                    i++;
 
-                    // loop through the rest of the number (if it is multi-digit)
-                    while(i < strlen && input.charAt(i) <= '9' && input.charAt(i) >= '0'){
-                        s.append(input.charAt(i));
-                        i++;
+                    // multi-digit functionality
+                    while (i < strlen && input.charAt(i) <= '9' && input.charAt(i) >= '0'){
+                        s.append(input.charAt(i++));
                     }
-
-                    int foundInt = Integer.parseInt(String.valueOf(s));
-                    ns.push(foundInt);
-                    continue;
+                    ns.push(Integer.parseInt(new String(s)));
 
                 } else if (ch == '('){
-                    // open parenthesis
-                    postMessage("Found open parenthesis");
                     op.push(ch);
-                    i++;
 
                 } else if (ch == ')'){
-                    // close parenthesis
-                    postMessage("Found close parenthesis");
 
                     // calculate everything inside the parenthesis (PEMDAS)
-                    while(!(op.peek() == '(')){
-                        ns.push(calculate(op.peek(), ns.pop(), ns.pop()));
+                    while(op.peek() != '('){
+                        ns.push(calculate(op.pop(), ns.pop(), ns.pop()));
                     }
                     op.pop();
-                    i++;
 
                 } else {
-                    // found an operator
-                    postMessage("Symbol found.");
-                    if(op.isEmpty()){
+                    if (op.isEmpty()){
                         op.push(ch);
                     } else if (precedence(op.peek(), ch)){
+                        // checking for precedence
                         ns.push(calculate(op.pop(), ns.pop(), ns.pop()));
                         op.push(ch);
                     } else {
+                        // we have found a basic operator
                         op.push(ch);
-                        i++;
                     }
                 }
+            }
 
-            } // end of outer loop and primary evaluation
-
+            // calculate what's left
             while(!op.isEmpty()){
                 ns.push(calculate(op.pop(), ns.pop(), ns.pop()));
-                ns.printStack();
-                op.printStack();
             }
-            postMessage("CALCULATED!");
-            ns.printStack();
-            op.printStack();
 
-            // return whatever is left on the number stack.
             return ns.pop();
-
         } else {
+            postMessage("uh-oh.. Something isn't right.");
             return 0;
         }
-
-    }
-
-    // for debugging use
-    private void postMessage(String s, int time){
-        System.out.println(s);
-        pause(time);
     }
 
     private void postMessage(String s){
         System.out.println(s);
         pause(250);
     }
-
 }
